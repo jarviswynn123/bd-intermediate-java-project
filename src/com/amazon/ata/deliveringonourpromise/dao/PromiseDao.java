@@ -1,8 +1,10 @@
 package com.amazon.ata.deliveringonourpromise.dao;
 
-import com.amazon.ata.deliveringonourpromise.deliverypromiseservice.DeliveryPromiseServiceClient;
+//import com.amazon.ata.deliveringonourpromise.deliverypromiseservice.DeliveryPromiseServiceClient;
+//import com.amazon.ata.deliveringonourpromise.orderfulfillmentservice.OrderFulfillmentServiceClient;
 import com.amazon.ata.deliveringonourpromise.ordermanipulationauthority.OrderManipulationAuthorityClient;
 import com.amazon.ata.deliveringonourpromise.types.Promise;
+import com.amazon.ata.deliveringonourpromise.types.ServiceClient;
 import com.amazon.ata.ordermanipulationauthority.OrderResult;
 import com.amazon.ata.ordermanipulationauthority.OrderResultItem;
 import com.amazon.ata.ordermanipulationauthority.OrderShipment;
@@ -15,17 +17,22 @@ import java.util.List;
  * DAO implementation for Promises.
  */
 public class PromiseDao implements ReadOnlyDao<String, List<Promise>> {
-    private DeliveryPromiseServiceClient dpsClient;
+
+    // To-Do replace dps client and ofClient with a list of serviceClient
     private OrderManipulationAuthorityClient omaClient;
+
+    private List<ServiceClient> serviceClients;
 
     /**
      * PromiseDao constructor, accepting service clients for DPS and OMA.
-     * @param dpsClient DeliveryPromiseServiceClient for DAO to access DPS
+     * @param serviceClients DeliveryPromiseServiceClient for DAO to access DPS
      * @param omaClient OrderManipulationAuthorityClient for DAO to access OMA
      */
-    public PromiseDao(DeliveryPromiseServiceClient dpsClient, OrderManipulationAuthorityClient omaClient) {
-        this.dpsClient = dpsClient;
+    public PromiseDao(List<ServiceClient> serviceClients, OrderManipulationAuthorityClient omaClient) {
+        // Single list of Service Clients instead of ofClient and dpsClient
         this.omaClient = omaClient;
+        this.serviceClients = serviceClients;
+
     }
 
     /**
@@ -42,11 +49,16 @@ public class PromiseDao implements ReadOnlyDao<String, List<Promise>> {
 
         // fetch Promise from Delivery Promise Service. If exists, add to list of Promises to return.
         // Set delivery date
-        Promise dpsPromise = dpsClient.getDeliveryPromiseByOrderItemId(customerOrderItemId);
-        if (dpsPromise != null) {
-            dpsPromise.setDeliveryDate(itemDeliveryDate);
-            promises.add(dpsPromise);
+        // Create a for loop that will iterate over a list of all service clients
+
+        for (ServiceClient client : serviceClients) {
+            Promise promise = client.getDeliveryPromiseByOrderItemId(customerOrderItemId);
+            if (promise != null) {
+                promise.setDeliveryDate(itemDeliveryDate);
+                promises.add(promise);
+            }
         }
+
 
         return promises;
     }

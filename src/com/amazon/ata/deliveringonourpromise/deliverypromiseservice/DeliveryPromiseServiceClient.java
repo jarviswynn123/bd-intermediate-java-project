@@ -1,13 +1,14 @@
 package com.amazon.ata.deliveringonourpromise.deliverypromiseservice;
 
 import com.amazon.ata.deliveringonourpromise.types.Promise;
+import com.amazon.ata.deliveringonourpromise.types.ServiceClient;
 import com.amazon.ata.deliverypromiseservice.service.DeliveryPromise;
 import com.amazon.ata.deliverypromiseservice.service.DeliveryPromiseService;
 
 /**
  * Client for accessing the DeliveryPromiseService to retrieve Promises.
  */
-public class DeliveryPromiseServiceClient {
+public class DeliveryPromiseServiceClient implements ServiceClient {
     private DeliveryPromiseService dpService;
 
     /**
@@ -33,13 +34,13 @@ public class DeliveryPromiseServiceClient {
         }
 
         return Promise.builder()
-                   .withPromiseLatestArrivalDate(deliveryPromise.getPromiseLatestArrivalDate())
-                   .withCustomerOrderItemId(deliveryPromise.getCustomerOrderItemId())
-                   .withPromiseLatestShipDate(deliveryPromise.getPromiseLatestShipDate())
-                   .withPromiseEffectiveDate(deliveryPromise.getPromiseEffectiveDate())
-                   .withIsActive(deliveryPromise.isActive())
-                   .withPromiseProvidedBy(deliveryPromise.getPromiseProvidedBy())
-                   .withAsin(deliveryPromise.getAsin())
-                   .build();
+                .withPromiseLatestArrivalDate(deliveryPromise.getPromiseLatestArrivalDate())
+                .withCustomerOrderItemId(deliveryPromise.getCustomerOrderItemId())
+                .withPromiseLatestShipDate(deliveryPromise.getPromiseLatestShipDate())
+                .withPromiseEffectiveDate(deliveryPromise.getPromiseEffectiveDate())
+                .withIsActive(deliveryPromise.isActive())
+                .withPromiseProvidedBy(deliveryPromise.getPromiseProvidedBy())
+                .withAsin(deliveryPromise.getAsin())
+                .build();
     }
 }

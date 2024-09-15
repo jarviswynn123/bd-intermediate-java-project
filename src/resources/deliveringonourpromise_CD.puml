@@ -1,0 +1,127 @@
+@startuml
+
+
+class PromiseHistoryClient {
+    - getPromiseHistoryByOrderId : GetPromiseHistoryByOrderIdActivity
+
+    + getPromiseHistoryByOrderId(orderId : String) PromiseHistory
+}
+
+class GetPromiseHistoryByOrderIdActivity {
+    - orderDao : ReadOnlyDao<String, Order>
+    - promiseDao : ReadOnlyDao<String, List<Promise>>
+
+    + getPromiseHistoryByOrderId(orderId String)
+}
+
+class OrderDao {
+    - omaClient : OrderManipulationAuthorityClient
+
+    + get(orderId String) Order
+    + convertToOrderItem(orderResultItem : OrderResultItem) OrderItem
+}
+
+class PromiseDao {
+    - dpsClient : DeliveryPromiseServiceClient
+    - omaClient : OrderManipulationAuthorityClient
+
+    + get(customerOrderItemId : String) List<Promise>
+    - getDeliveryDateForOrderItem(customerOrderItemId : String) ZonedDateTime
+
+}
+
+class OrderManipulationAuthorityClient {
+    - omaService : OrderManipulationAuthority
+
+    + getCustomerOrderByOrderId(orderId : String) OrderResult
+    + getCustomerOrderByOrderItemId(orderItemId : String) OrderResultItem
+}
+
+class DeliveryPromiseServiceClient {
+    - dpsService : DeliveryPromiseService
+
+    + getDeliveryPromiseByOrderItemId(customerOrderItemId : String) Promise
+}
+
+interface ReadOnlyDao {
+    get(orderId : I) : O
+}
+
+class Order {
+    - orderId : String
+    - customerId : String
+    - marketplaceId : String
+    - condition : OrderCondition
+    - customerOrderItemList : List<OrderItem>
+    - shipOption : String
+    - orderDate : ZonedDateTime
+
+}
+
+class OrderItem {
+    - customerOrderItemId : String
+    - orderId : String
+    - asin : String
+    - merchantId : String
+    - quantity : int
+    - title : String
+    - isConfidenceTracked : boolean
+    - confidence : int
+
+    + equals(o Object) boolean
+    + hashCode() int
+    +
+}
+
+class Promise {
+    - customerOrderItemId : String
+    - asin : String
+    - active : boolean
+    - promiseEffectiveDate : ZonedDateTime
+    - promiseLatestArrivalDate : ZonedDateTime
+    - promiseLatestShipDate : ZonedDateTime
+    - deliveryDate : ZonedDateTime
+    - promiseProvidedBy : String
+    - confidence : int
+
+    + setConfidence(isConfidenceTracked : boolean, trackedConfidence : int)
+    + setDeliveryDate(deliveryDate : ZonedDateTime)
+    + build() Promise
+
+}
+
+class PromiseHistory {
+    - order : Order
+    - promises : List<Promise>
+
+    + addPromise(newPromise : Promise)
+    + getPromises() List<Promise>
+}
+
+class App {
+    + getPromiseHistory() PromiseHistoryClient
+    + getPromiseHistoryByOrderIdActivity() GetPromiseHistoryByOrderIdActivity
+    + getOrderDao() OrderDao
+    + getPromiseDao PromiseDao
+    + getOrderManipulationAuthority() OrderManipulationClient
+    + getDeliveryPromiseService() DeliveryPromiseService
+    + getOrderDatastore() OrderDatastore
+}
+
+
+PromiseHistoryClient --> GetPromiseHistoryByOrderIdActivity
+GetPromiseHistoryByOrderIdActivity --> OrderDao
+OrderDao --> PromiseDAO
+PromiseDAO --> OrderManipulationAuthorityClient
+OrderManipulationAuthorityClient --> DeliveryPromiseServiceClient
+GetPromiseHistoryByOrderIdActivity --> PromiseDao
+PromiseDao --> DeliveryPromiseServiceClient
+PromiseDao --> OrderManipulationAuthorityClient
+OrderDao --> OrderManipulationAuthorityClient
+PromiseHistory --> Order
+PromiseHistory --> Promise
+Order --> OrderItem
+OrderDao ..|> ReadOnlyDao
+PromiseDao ..|> ReadOnlyDao
+
+@enduml
